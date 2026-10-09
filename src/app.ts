@@ -10,9 +10,10 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok", service: "BRAYAN MOLINA" , version: "1.0.0" });
-  });
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", service: "express-ts-api" });
+});
+``
 
   app.use("/api/postgres", postgresRouter);
   app.use("/api/mongo", mongoRouter);
