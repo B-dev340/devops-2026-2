@@ -1,37 +1,34 @@
 import { Router, type Request, type Response } from "express";
+import { getMongoDb } from "../db/mongo.js";
 
 export const productsRouter = Router();
 
-const products: Array<{
-  id: number;
-  name: string;
-  price: number;
-}> = [];
-
-productsRouter.get("/", (_req: Request, res: Response) => {
-  res.json({
-    count: products.length,
-    data: products,
-  });
+// GET /api/products → lista los productos
+productsRouter.get("/", async (_req: Request, res: Response) => {
+  try {
+    const products = await getMongoDb().collection("products").find({}).toArray();
+    res.json({ database: "mongodb", count: products.length, data: products });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    res.status(500).json({ status: "error", database: "mongodb", message });
+  }
 });
 
-productsRouter.post("/", (req: Request, res: Response) => {
-  const { name, price } = req.body;
+// POST /api/products → crea un producto { name, price }
+productsRouter.post("/", async (req: Request, res: Response) => {
+  const { name, price } = req.body as { name?: string; price?: number };
 
-  if (!name || price === undefined) {
-    res.status(400).json({
-      message: "name and price are required",
-    });
+  if (!name || typeof price !== "number" || price <= 0) {
+    res.status(400).json({ message: "name and a positive price are required" });
     return;
   }
 
-  const product = {
-    id: products.length + 1,
-    name,
-    price,
-  };
-
-  products.push(product);
-
-  res.status(201).json(product);
+  try {
+    const doc = { name, price, createdAt: new Date() };
+    const result = await getMongoDb().collection("products").insertOne(doc);
+    res.status(201).json({ database: "mongodb", data: { _id: result.insertedId, ...doc } });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    res.status(500).json({ status: "error", database: "mongodb", message });
+  }
 });
