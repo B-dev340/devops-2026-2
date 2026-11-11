@@ -74,6 +74,7 @@ export class ProductStore {
   private products: Product[] = [];
 
   create(input: CreateProductInput): Product {
+    const start = performance.now();
     const name = input.name?.trim();
 
     if (!name || name.length > 80) {
@@ -123,23 +124,53 @@ export class ProductStore {
 
     this.products.push(product);
 
-    return clone(product);
+   const result = clone(product);
+
+const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.create: ${(end - start).toFixed(3)} ms`,
+);
+
+return result;
   }
 
-  getById(id: string): Product | null {
-    const product = this.products.find((p) => p.id === id);
-    return product ? clone(product) : null;
-  }
+ getById(id: string): Product | null {
+  const start = performance.now();
 
-  getBySku(sku: string): Product | null {
-    const value = sku.trim().toUpperCase();
+  const product = this.products.find((p) => p.id === id);
 
-    const product = this.products.find((p) => p.sku === value);
+  const result = product ? clone(product) : null;
 
-    return product ? clone(product) : null;
-  }
+  const end = performance.now();
+
+  console.log(
+    `[RENDIMIENTO] ProductStore.getById: ${(end - start).toFixed(3)} ms`,
+  );
+
+  return result;
+}
+
+ getBySku(sku: string): Product | null {
+  const start = performance.now();
+
+  const value = sku.trim().toUpperCase();
+
+  const product = this.products.find((p) => p.sku === value);
+
+  const result = product ? clone(product) : null;
+
+  const end = performance.now();
+
+  console.log(
+    `[RENDIMIENTO] ProductStore.getBySku: ${(end - start).toFixed(3)} ms`,
+  );
+
+  return result;
+}
 
   list(query?: ListProductsQuery): Product[] {
+    const start = performance.now();
     let products = [...this.products];
     if (
   query?.minPrice !== undefined &&
@@ -211,17 +242,34 @@ if (
       return a.sku.localeCompare(b.sku);
     });
 
-    return products.map(clone);
+    const result = products.map(clone);
+
+const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.list: ${(end - start).toFixed(3)} ms`,
+);
+
+return result;
   }
 
   update(id: string, patch: UpdateProductInput): Product {
+    const start = performance.now();
     const product = this.products.find((p) => p.id === id);
 
     if (!product) {
       fail("NOT_FOUND", "No existe");
     }
     if (Object.keys(patch).length === 0) {
-  return clone(product);
+  const result = clone(product);
+
+const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.update: ${(end - start).toFixed(3)} ms`,
+);
+
+return result;
 }
 if (patch.sku !== undefined) {
   const sku = patch.sku.trim().toUpperCase();
@@ -261,10 +309,19 @@ if (patch.category !== undefined) {
 
     product.updatedAt = new Date();
 
-    return clone(product);
+    const result = clone(product);
+
+const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.update: ${(end - start).toFixed(3)} ms`,
+);
+
+return result;
   }
 
   remove(id: string): boolean {
+    const start = performance.now();
     const index = this.products.findIndex(
       (p) => p.id === id,
     );
@@ -274,11 +331,17 @@ if (patch.category !== undefined) {
     }
 
     this.products.splice(index, 1);
+    const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.remove: ${(end - start).toFixed(3)} ms`,
+);
 
     return true;
   }
 
 adjustStock(id: string, delta: number): Product {
+  const start = performance.now();
   const product = this.products.find(
     (p) => p.id === id,
   );
@@ -306,6 +369,14 @@ adjustStock(id: string, delta: number): Product {
   product.stock = newStock;
   product.updatedAt = new Date();
 
-  return clone(product);
+  const result = clone(product);
+
+const end = performance.now();
+
+console.log(
+  `[RENDIMIENTO] ProductStore.adjustStock: ${(end - start).toFixed(3)} ms`,
+);
+
+return result;
 }
 }
